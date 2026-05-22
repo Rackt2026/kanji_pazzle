@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>漢字パズル｜まなびやつばめ</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+      background: linear-gradient(135deg, #fff7c2 0%, #b8f7ff 45%, #ffd6ef 100%);
+      color: #333;
+      overflow-x: hidden;
+    }
+
+    .screen {
+      min-height: 100vh;
+      width: min(1100px, 94vw);
+      margin: 0 auto;
+      padding: 28px 0 40px;
+      text-align: center;
+    }
+
+    .hidden { display: none !important; }
+    .invisible { opacity: 0; pointer-events: none; }
+
+    .start-card,
+    .game-card,
+    .result-card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 4px solid #fff;
+      border-radius: 32px;
+      padding: 24px 20px;
+      box-shadow: 0 12px 0 rgba(255, 183, 77, 0.35), 0 18px 35px rgba(0, 0, 0, 0.12);
+    }
+
+    .start-card {
+      margin-top: 32px;
+      min-height: 74vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+    }
+
+    .logo-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border-radius: 28px;
+      padding: 18px;
+      border: 4px solid #87ddff;
+      box-shadow: 0 10px 0 rgba(25, 118, 210, 0.18);
+      transition: transform .18s ease;
+    }
+
+    .logo-link:hover { transform: translateY(-4px); }
+
+    .logo-link img {
+      max-width: min(320px, 74vw);
+      max-height: 160px;
+      object-fit: contain;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 52px);
+      color: #ff7a00;
+      letter-spacing: 0.06em;
+      text-shadow: 2px 2px 0 #fff1a8;
+    }
+
+    .start-title {
+      font-size: clamp(34px, 7vw, 64px);
+      color: #7b3fe4;
+      text-shadow: 3px 3px 0 #fff1a8;
+    }
+
+    .lead {
+      margin: 8px 0 0;
+      font-size: clamp(16px, 2.8vw, 22px);
+      font-weight: 800;
+      line-height: 1.7;
+    }
+
+    .mode-select {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(180px, 1fr));
+      gap: 16px;
+      width: min(520px, 92%);
+      margin-top: 10px;
+    }
+
+    .mode-btn {
+      border: none;
+      border-radius: 24px;
+      padding: 22px 14px;
+      font-family: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      color: #fff;
+      box-shadow: 0 8px 0 rgba(0,0,0,.18);
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .mode-btn:active { transform: translateY(5px); box-shadow: none; }
+    .mode-btn strong { display: block; font-size: 28px; margin-bottom: 8px; }
+    .mode-btn span { display: block; font-size: 15px; line-height: 1.5; }
+    .mode-4 { background: linear-gradient(180deg, #ffb74d, #ff7a00); }
+    .mode-9 { background: linear-gradient(180deg, #8bd3ff, #1976d2); }
+
+    .badge-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 3px solid #87ddff;
+      font-weight: 900;
+      color: #1976d2;
+    }
+
+    .game-card { margin-top: 20px; }
+
+    .top-info {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+      margin: 18px 0 16px;
+    }
+
+    .info-pill {
+      font-size: clamp(15px, 2.2vw, 20px);
+      font-weight: 900;
+      background: #fff;
+      border-radius: 999px;
+      padding: 10px 14px;
+      border: 3px solid #ffd54f;
+      box-shadow: 0 5px 0 rgba(255, 193, 7, 0.26);
+    }
+
+    .question-text {
+      color: #7b3fe4;
+      border-color: #c4a8ff;
+      box-shadow: 0 5px 0 rgba(126, 87, 194, 0.2);
+    }
+
+    .play-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 250px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .stage-wrap {
+      background: rgba(255, 255, 255, 0.78);
+      border-radius: 32px;
+      border: 4px solid #fff;
+      padding: 18px;
+      box-shadow: 0 15px 28px rgba(0, 0, 0, 0.12);
+      transition: opacity .12s ease;
+    }
+
+    .stage {
+      position: relative;
+      height: 590px;
+      border-radius: 24px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 12% 15%, rgba(255,255,255,.9) 0 6px, transparent 7px),
+        radial-gradient(circle at 82% 22%, rgba(255,255,255,.9) 0 8px, transparent 9px),
+        radial-gradient(circle at 28% 80%, rgba(255,255,255,.75) 0 10px, transparent 11px),
+        linear-gradient(180deg, #e8fbff, #fff6d6);
+    }
+
+    .target-frame {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      border: 4px dashed rgba(255, 122, 0, 0.55);
+      border-radius: 24px;
+      background: rgba(255,255,255,0.35);
+      display: grid;
+      pointer-events: none;
+    }
+
+    .target-frame span { border: 1px dashed rgba(255, 122, 0, 0.25); }
+
+    .piece {
+      position: absolute;
+      overflow: hidden;
+      border-radius: 16px;
+      background: #fff;
+      border: 4px solid #ffffff;
+      box-shadow: 0 10px 0 rgba(0, 0, 0, 0.08), 0 16px 22px rgba(0, 0, 0, 0.12);
+      transition: left 0.72s ease, top 0.72s ease, transform 0.72s ease, box-shadow 0.72s ease;
+    }
+
+    .piece::before {
+      content: attr(data-kanji);
+      position: absolute;
+      font-family: "Yu Mincho", "Hiragino Mincho ProN", "Yu Gothic", serif;
+      font-weight: 900;
+      text-align: center;
+      color: #222;
+    }
+
+    .piece::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      box-shadow: inset 0 0 0 4px rgba(255, 221, 87, 0.65);
+      pointer-events: none;
+    }
+
+    .answer-overlay {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(.65);
+      width: 310px;
+      height: 310px;
+      border-radius: 32px;
+      background: rgba(255,255,255,.96);
+      border: 6px solid #ffb74d;
+      box-shadow: 0 18px 0 rgba(255, 122, 0, .22), 0 22px 40px rgba(0,0,0,.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 20;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .answer-overlay.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .answer-label {
+      font-size: 22px;
+      font-weight: 900;
+      color: #ff7a00;
+      margin-bottom: 4px;
+    }
+
+    .answer-big-kanji {
+      font-family: "Yu Mincho", "Hiragino Mincho ProN", "Yu Gothic", serif;
+      font-size: 190px;
+      line-height: 1;
+      font-weight: 900;
+      color: #222;
+    }
+
+    .control-panel {
+      background: rgba(255,255,255,.86);
+      border: 4px solid #fff;
+      border-radius: 28px;
+      padding: 16px;
+      box-shadow: 0 12px 24px rgba(0,0,0,.1);
+      position: sticky;
+      top: 16px;
+    }
+
+    .message {
+      min-height: 92px;
+      padding: 12px;
+      border-radius: 18px;
+      background: #ffffff;
+      border: 3px solid #f5b7ff;
+      color: #b000bd;
+      font-weight: 900;
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .main-action-area {
+      margin-bottom: 34px;
+    }
+
+    .sub-action-area {
+      margin-top: 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-top: 18px;
+      border-top: 3px dashed rgba(126, 87, 194, 0.25);
+    }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 15px 14px;
+      font-size: 18px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+      font-family: inherit;
+    }
+
+    .btn:active { transform: translateY(4px); box-shadow: none; }
+
+    .btn-main {
+      background: linear-gradient(180deg, #ffd54f, #ff7a00);
+      color: #fff;
+      box-shadow: 0 10px 0 #c95b00;
+      font-size: 26px;
+      padding: 24px 18px;
+      border: 5px solid #fff3b0;
+      animation: pulseMainButton 1.6s infinite;
+    }
+
+    @keyframes pulseMainButton {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 10px 0 #c95b00, 0 0 0 rgba(255,122,0,0.0);
+      }
+      50% {
+        transform: scale(1.03);
+        box-shadow: 0 10px 0 #c95b00, 0 0 22px rgba(255,122,0,0.45);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 10px 0 #c95b00, 0 0 0 rgba(255,122,0,0.0);
+      }
+    }
+
+    .btn-next-question {
+      background: linear-gradient(180deg, #ffd54f, #ff7a00);
+      color: #fff;
+      box-shadow: 0 10px 0 #c95b00;
+      font-size: 26px;
+      padding: 24px 18px;
+      border: 5px solid #fff3b0;
+      animation: pulseMainButton 1.6s infinite;
+    }
+
+    .btn-reset {
+      background: linear-gradient(180deg, #a7f3d0, #22c55e);
+      color: #07522b;
+      box-shadow: 0 7px 0 #14823d;
+    }
+
+    .btn-home {
+      background: linear-gradient(180deg, #e2e8f0, #94a3b8);
+      color: #233044;
+      box-shadow: 0 7px 0 #64748b;
+    }
+
+    .btn-copy {
+      background: linear-gradient(180deg, #fde68a, #f59e0b);
+      color: #5b3100;
+      box-shadow: 0 7px 0 #b45309;
+    }
+
+    .copy-note {
+      margin-top: 10px;
+      min-height: 24px;
+      font-size: 13px;
+      font-weight: 900;
+      color: #0f766e;
+    }
+
+    .confetti {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .25s ease;
+      z-index: 25;
+    }
+
+    .confetti.show { opacity: 1; }
+
+    .confetti i {
+      position: absolute;
+      width: 12px;
+      height: 20px;
+      border-radius: 4px;
+      animation: fall 1.2s ease forwards;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-40px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(590px) rotate(480deg); opacity: 0; }
+    }
+
+    .result-card {
+      margin-top: 56px;
+      min-height: 60vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+    }
+
+    .result-title {
+      font-size: clamp(34px, 6vw, 60px);
+      color: #ff7a00;
+      margin: 0;
+    }
+
+    .result-text {
+      font-size: clamp(18px, 3vw, 26px);
+      font-weight: 900;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    @media (max-width: 900px) {
+      /* タブレット幅やJSFiddleの表示枠でも、ボタンは右側に維持する */
+      .play-layout { grid-template-columns: minmax(0, 1fr) 220px; }
+      .control-panel { position: sticky; top: 16px; }
+      .button-row { display: flex; flex-direction: column; }
+      .btn { font-size: 16px; padding: 13px 10px; }
+    }
+
+    @media (max-width: 640px) {
+      /* スマホのように本当に狭い画面だけ、下に回す */
+      .play-layout { grid-template-columns: 1fr; }
+      .control-panel { position: static; }
+    }
+
+    @media (max-width: 760px) {
+      .mode-select { grid-template-columns: 1fr; }
+      .top-info { grid-template-columns: 1fr; }
+      .stage { height: 500px; }
+      .answer-overlay { width: 260px; height: 260px; }
+      .answer-big-kanji { font-size: 155px; }
+      .button-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <section class="screen" id="startScreen">
+    <div class="start-card">
+      <a class="logo-link" href="https://manabiya-tsubame.com/" target="_blank" rel="noopener noreferrer" aria-label="まなびやつばめ公式サイトへ">
+        <img src="rogo.png" alt="まなびやつばめ" />
+      </a>
+      <h1 class="start-title">漢字ばらばらパズル</h1>
+      <p class="lead">4つ、または9つに分かれた漢字を見て、<br>なんの漢字か想像してみよう！</p>
+      <div class="mode-select">
+        <button type="button" class="mode-btn mode-4" onclick="startGame(4)">
+          <strong>4分割</strong>
+          <span>まずはこちら<br>形を大きく見つけよう</span>
+        </button>
+        <button type="button" class="mode-btn mode-9" onclick="startGame(9)">
+          <strong>9分割</strong>
+          <span>チャレンジ問題<br>細かい形を見つけよう</span>
+        </button>
+      </div>
+      <div class="badge-row">
+        <span class="badge">見る力</span>
+        <span class="badge">想像する力</span>
+        <span class="badge">漢字の形を覚える力</span>
+      </div>
+    </div>
+  </section>
+
+  <main class="screen hidden" id="gameScreen">
+    <section class="game-card">
+      <h1>なんの漢字かな？</h1>
+      <p class="lead">バラバラのパーツを見て、頭の中で完成形を想像しよう！</p>
+
+      <div class="top-info">
+        <div class="info-pill" id="questionNumber">第1問 / 20問</div>
+        <div class="info-pill question-text">この漢字はなんでしょう？</div>
+        <div class="info-pill" id="stepCount">もどったパーツ：0 / 4</div>
+      </div>
+
+      <div class="play-layout">
+        <div class="stage-wrap" id="stageWrap">
+          <div class="stage" id="stage">
+            <div class="target-frame" id="targetFrame" aria-hidden="true"></div>
+            <div class="answer-overlay" id="answerOverlay">
+              <div class="answer-label">正解</div>
+              <div class="answer-big-kanji" id="answerBigKanji">気</div>
+            </div>
+            <div class="confetti" id="confetti"></div>
+          </div>
+        </div>
+
+        <aside class="control-panel">
+          <div class="message" id="message">まずは、何の漢字か予想してみよう！</div>
+          <div class="button-row">
+            <div class="main-action-area">
+              <button type="button" class="btn btn-main" id="nextBtn">パーツをあつめる！</button>
+              <button type="button" class="btn btn-next-question hidden" id="nextQuestionBtn">次の問題へ</button>
+            </div>
+
+            <div class="sub-action-area">
+              <button type="button" class="btn btn-reset" id="resetBtn">この問題をもう一回</button>
+              <button type="button" class="btn btn-home" id="homeBtn">スタート画面へ</button>
+            </div>
+          </div>
+          
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <section class="screen hidden" id="resultScreen">
+    <div class="result-card">
+      <h1 class="result-title">おつかれさま！</h1>
+      <p class="result-text" id="resultText">全部の問題が終わりました。</p>
+      <button type="button" class="btn btn-main" id="restartBtn">もう一回あそぶ</button>
+      
+      <button type="button" class="btn btn-home" id="resultHomeBtn">スタート画面へ</button>
+    </div>
+  </section>
+
+  <script>
+    const QUESTION_COUNT = 20;
+
+    const kanjiSource = [
+      '気', '聞', '道', '走', '黄', '川', '楽', '国', '育', '保',
+      '万', '間', '金', '空', '男', '字', '虫', '貝', '糸',
+      '百', '町', '先', '人', '耳', '五', '学', '一', '文', '天',
+      '早', '水', '七', '口', '右', '木', '田', '草', '正', '車',
+      '校', '九', '雨', '本', '土', '足', '生', '手', '左', '休',
+      '円', '名', '二', '村', '青', '十', '三', '玉', '王', '目',
+      '日', '大', '夕', '出', '山', '音', '立', '入', '石', '女',
+      '子', '下', '力', '年', '竹', '赤', '小', '四', '月', '火',
+      '林', '白', '中', '千', '上', '犬', '花', '六', '八', '森',
+      '見'
+    ];
+
+    const uniqueKanjiList = [...new Set(kanjiSource)];
+    let kanjiList = [];
+
+    function shuffleArray(array) {
+      const copied = [...array];
+      for (let i = copied.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copied[i], copied[j]] = [copied[j], copied[i]];
+      }
+      return copied;
+    }
+
+    const startScreen = document.getElementById('startScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const restartBtn = document.getElementById('restartBtn');
+    const homeBtn = document.getElementById('homeBtn');
+    const resultHomeBtn = document.getElementById('resultHomeBtn');
+
+    const stageWrap = document.getElementById('stageWrap');
+    const stage = document.getElementById('stage');
+    const targetFrame = document.getElementById('targetFrame');
+    const nextBtn = document.getElementById('nextBtn');
+    const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const stepCount = document.getElementById('stepCount');
+    const message = document.getElementById('message');
+    const confetti = document.getElementById('confetti');
+    const questionNumber = document.getElementById('questionNumber');
+    const resultText = document.getElementById('resultText');
+    const answerOverlay = document.getElementById('answerOverlay');
+    const answerBigKanji = document.getElementById('answerBigKanji');
+    
+
+    let currentQuestionIndex = 0;
+    let currentStep = 0;
+    let currentMode = 4;
+    let pieces = [];
+    let returnOrder = [];
+    let isLoadingQuestion = false;
+
+    const messages = {
+      start: 'まずは、何の漢字か予想してみよう！',
+      middle: '少しずつ形が見えてきたね！まだ答えは内緒です。',
+      near: 'あと少し！頭の中で完成させてみよう！',
+      complete: '正解が出ました！よく見つけたね！'
+    };
+
+    function showScreen(screenName) {
+      startScreen.classList.add('hidden');
+      gameScreen.classList.add('hidden');
+      resultScreen.classList.add('hidden');
+      if (screenName === 'start') startScreen.classList.remove('hidden');
+      if (screenName === 'game') gameScreen.classList.remove('hidden');
+      if (screenName === 'result') resultScreen.classList.remove('hidden');
+    }
+
+    function getStageSize() {
+      const isSmall = window.innerWidth <= 760;
+      const full = isSmall ? 270 : 330;
+      const grid = currentMode === 4 ? 2 : 3;
+      const piece = full / grid;
+      return { full, piece };
+    }
+
+    function getInitialPosition(index, total, pieceSize) {
+      const rect = stage.getBoundingClientRect();
+      const stageW = rect.width || 700;
+      const stageH = rect.height || 590;
+      const margin = 22;
+      const right = Math.max(margin, stageW - pieceSize - margin);
+      const bottom = Math.max(margin, stageH - pieceSize - margin);
+      const midX = Math.max(margin, (stageW - pieceSize) / 2);
+      const midY = Math.max(margin, (stageH - pieceSize) / 2);
+
+      const positions4 = [
+        { left: right, top: bottom, rot: 19 },
+        { left: margin, top: bottom, rot: -15 },
+        { left: right, top: margin, rot: -20 },
+        { left: margin, top: margin, rot: 14 }
+      ];
+
+      const positions9 = [
+        { left: margin, top: margin, rot: -16 },
+        { left: midX, top: margin, rot: 13 },
+        { left: right, top: margin, rot: -12 },
+        { left: margin, top: Math.max(margin, midY - pieceSize * 1.25), rot: 18 },
+        { left: right, top: Math.max(margin, midY - pieceSize * 1.25), rot: -18 },
+        { left: margin, top: Math.min(bottom, midY + pieceSize * 1.25), rot: -13 },
+        { left: right, top: Math.min(bottom, midY + pieceSize * 1.25), rot: 16 },
+        { left: midX, top: bottom, rot: -14 },
+        { left: Math.max(margin, midX - pieceSize * 1.55), top: bottom, rot: 15 }
+      ];
+
+      const selected = total === 4 ? positions4[index] : positions9[index];
+      return { left: `${selected.left}px`, top: `${selected.top}px`, rot: selected.rot };
+    }
+
+    function injectPieceBeforeStyles(full) {
+      let styleEl = document.getElementById('dynamicPieceStyle');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'dynamicPieceStyle';
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = `
+        .piece::before {
+          width: ${full}px;
+          height: ${full}px;
+          left: var(--x);
+          top: var(--y);
+          font-size: ${Math.round(full * 0.86)}px;
+          line-height: ${full}px;
+        }
+      `;
+    }
+
+    function createPieces() {
+      document.querySelectorAll('.piece').forEach(el => el.remove());
+      pieces = [];
+      returnOrder = [];
+
+      const grid = currentMode === 4 ? 2 : 3;
+      const total = currentMode;
+      const { full, piece } = getStageSize();
+      const kanji = kanjiList[currentQuestionIndex];
+
+      targetFrame.style.width = full + 'px';
+      targetFrame.style.height = full + 'px';
+      targetFrame.style.gridTemplateColumns = `repeat(${grid}, 1fr)`;
+      targetFrame.style.gridTemplateRows = `repeat(${grid}, 1fr)`;
+      targetFrame.innerHTML = '';
+      for (let i = 0; i < total; i++) targetFrame.appendChild(document.createElement('span'));
+
+      injectPieceBeforeStyles(full);
+
+      for (let i = 0; i < total; i++) {
+        const row = Math.floor(i / grid);
+        const col = i % grid;
+        const pos = getInitialPosition(i, total, piece);
+
+        const pieceEl = document.createElement('div');
+        pieceEl.className = 'piece';
+        pieceEl.dataset.index = i;
+        pieceEl.dataset.kanji = kanji;
+        pieceEl.style.width = piece + 'px';
+        pieceEl.style.height = piece + 'px';
+        pieceEl.style.left = pos.left;
+        pieceEl.style.top = pos.top;
+        pieceEl.style.transform = `rotate(${pos.rot}deg)`;
+        pieceEl.style.setProperty('--x', (-col * piece) + 'px');
+        pieceEl.style.setProperty('--y', (-row * piece) + 'px');
+
+        stage.appendChild(pieceEl);
+        pieces.push(pieceEl);
+      }
+
+      returnOrder = shuffleArray(pieces);
+    }
+
+    function placePieceAtAnswer(pieceEl) {
+      const grid = currentMode === 4 ? 2 : 3;
+      const { full, piece } = getStageSize();
+      const index = Number(pieceEl.dataset.index);
+      const row = Math.floor(index / grid);
+      const col = index % grid;
+      pieceEl.style.left = `calc(50% - ${full / 2}px + ${col * piece}px)`;
+      pieceEl.style.top = `calc(50% - ${full / 2}px + ${row * piece}px)`;
+      pieceEl.style.transform = 'rotate(0deg)';
+      pieceEl.classList.add('fixed');
+    }
+
+    function updateView() {
+      const totalQuestions = kanjiList.length;
+      questionNumber.textContent = `第${currentQuestionIndex + 1}問 / ${totalQuestions}問｜${currentMode}分割`;
+      stepCount.textContent = `もどったパーツ：${currentStep} / ${currentMode}`;
+
+      if (currentStep === 0) message.textContent = messages.start;
+      else if (currentStep < currentMode - 1) message.textContent = messages.middle;
+      else if (currentStep < currentMode) message.textContent = messages.near;
+      else message.textContent = messages.complete;
+
+      if (currentStep >= currentMode) {
+        // 重要：正解漢字は、完成した瞬間までDOM上に入れない。
+        // これで次問の答えが残像のように見える現象を防ぐ。
+        answerBigKanji.textContent = kanjiList[currentQuestionIndex];
+        answerOverlay.classList.add('show');
+        nextBtn.classList.add('hidden');
+        nextQuestionBtn.classList.remove('hidden');
+        nextQuestionBtn.textContent = currentQuestionIndex === totalQuestions - 1 ? '結果を見る' : '次の問題へ';
+        launchConfetti();
+      } else {
+        answerOverlay.classList.remove('show');
+        answerBigKanji.textContent = '';
+        nextBtn.classList.remove('hidden');
+        nextQuestionBtn.classList.add('hidden');
+        confetti.classList.remove('show');
+      }
+    }
+
+    function startGame(mode) {
+      currentMode = mode;
+      currentQuestionIndex = 0;
+      kanjiList = shuffleArray(uniqueKanjiList).slice(0, QUESTION_COUNT);
+      showScreen('game');
+      loadQuestionSafely();
+    }
+
+    function loadQuestionSafely() {
+      if (isLoadingQuestion) return;
+      isLoadingQuestion = true;
+
+      // 残像対策：まず前問の正解レイヤーを完全に空にする。
+      // 「非表示にする」だけだと、描画タイミングで一瞬見える場合があるため。
+      answerOverlay.classList.remove('show');
+      answerBigKanji.textContent = '';
+      confetti.classList.remove('show');
+      confetti.innerHTML = '';
+      stageWrap.classList.add('invisible');
+
+      // 既存パーツも先に消して、前問の漢字が残らないようにする。
+      document.querySelectorAll('.piece').forEach(el => el.remove());
+      targetFrame.innerHTML = '';
+
+      requestAnimationFrame(() => {
+        currentStep = 0;
+
+        createPieces();
+        updateView();
+
+        // 正解文字はここではセットしない。
+        // 最後のパーツが揃った瞬間だけ updateView() 内で表示する。
+        answerBigKanji.textContent = '';
+
+        requestAnimationFrame(() => {
+          stageWrap.classList.remove('invisible');
+          isLoadingQuestion = false;
+        });
+      });
+    }
+
+    function moveNextPiece() {
+      if (currentStep >= currentMode || isLoadingQuestion) return;
+      playMoveSound();
+      placePieceAtAnswer(returnOrder[currentStep]);
+      currentStep++;
+      updateView();
+    }
+
+    function playMoveSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        const now = ctx.currentTime;
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc1.type = 'sine';
+        osc2.type = 'triangle';
+        osc1.frequency.setValueAtTime(660, now);
+        osc1.frequency.exponentialRampToValueAtTime(990, now + 0.11);
+        osc2.frequency.setValueAtTime(1320, now + 0.02);
+        osc2.frequency.exponentialRampToValueAtTime(1760, now + 0.13);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.18, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+        osc1.start(now);
+        osc2.start(now + 0.02);
+        osc1.stop(now + 0.18);
+        osc2.stop(now + 0.18);
+        setTimeout(() => ctx.close(), 240);
+      } catch (e) {}
+    }
+
+    function goNextQuestion() {
+      if (isLoadingQuestion) return;
+      isLoadingQuestion = true;
+
+      // 次問へ進む瞬間に、正解文字そのものを空にする。
+      // レイヤーを消すだけではなく、文字データも消すのが重要。
+      answerOverlay.classList.remove('show');
+      answerBigKanji.textContent = '';
+      confetti.classList.remove('show');
+      confetti.innerHTML = '';
+      stageWrap.classList.add('invisible');
+
+      document.querySelectorAll('.piece').forEach(el => el.remove());
+      targetFrame.innerHTML = '';
+
+      setTimeout(() => {
+        if (currentQuestionIndex >= kanjiList.length - 1) {
+          resultText.textContent = `${kanjiList.length}問すべて終わりました。漢字の形をよく見られましたね！`;
+          showScreen('result');
+          stageWrap.classList.remove('invisible');
+          isLoadingQuestion = false;
+          return;
+        }
+
+        currentQuestionIndex++;
+        isLoadingQuestion = false;
+        loadQuestionSafely();
+      }, 120);
+    }
+
+    function resetCurrentQuestion() {
+      if (isLoadingQuestion) return;
+      loadQuestionSafely();
+    }
+
+    function launchConfetti() {
+      confetti.innerHTML = '';
+      const colors = ['#ff5c8a', '#ffd54f', '#4dd0e1', '#81c784', '#9575cd', '#ff8a65'];
+      for (let i = 0; i < 34; i++) {
+        const item = document.createElement('i');
+        item.style.left = Math.random() * 100 + '%';
+        item.style.top = '-30px';
+        item.style.background = colors[Math.floor(Math.random() * colors.length)];
+        item.style.animationDelay = Math.random() * 0.45 + 's';
+        item.style.animationDuration = 0.9 + Math.random() * 0.8 + 's';
+        confetti.appendChild(item);
+      }
+      confetti.classList.add('show');
+    }
+
+    restartBtn.addEventListener('click', () => startGame(currentMode));
+    homeBtn.addEventListener('click', () => showScreen('start'));
+    resultHomeBtn.addEventListener('click', () => showScreen('start'));
+    nextBtn.addEventListener('click', moveNextPiece);
+    nextQuestionBtn.addEventListener('click', goNextQuestion);
+    resetBtn.addEventListener('click', resetCurrentQuestion);
+
+    window.addEventListener('resize', () => {
+      if (!gameScreen.classList.contains('hidden') && kanjiList.length > 0) loadQuestionSafely();
+    });
+  </script>
+</body>
+</html>
