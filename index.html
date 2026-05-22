@@ -18,9 +18,9 @@
 
     .screen {
       min-height: 100vh;
-      width: min(1100px, 94vw);
+      width: min(1040px, 96vw);
       margin: 0 auto;
-      padding: 28px 0 40px;
+      padding: 14px 0 20px;
       text-align: center;
     }
 
@@ -32,8 +32,8 @@
     .result-card {
       background: rgba(255, 255, 255, 0.9);
       border: 4px solid #fff;
-      border-radius: 32px;
-      padding: 24px 20px;
+      border-radius: 28px;
+      padding: 16px 16px;
       box-shadow: 0 12px 0 rgba(255, 183, 77, 0.35), 0 18px 35px rgba(0, 0, 0, 0.12);
     }
 
@@ -69,7 +69,7 @@
 
     h1 {
       margin: 0;
-      font-size: clamp(30px, 5vw, 52px);
+      font-size: clamp(26px, 4.2vw, 42px);
       color: #ff7a00;
       letter-spacing: 0.06em;
       text-shadow: 2px 2px 0 #fff1a8;
@@ -82,8 +82,8 @@
     }
 
     .lead {
-      margin: 8px 0 0;
-      font-size: clamp(16px, 2.8vw, 22px);
+      margin: 6px 0 0;
+      font-size: clamp(14px, 2.2vw, 18px);
       font-weight: 800;
       line-height: 1.7;
     }
@@ -137,19 +137,19 @@
     .top-info {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
-      margin: 18px 0 16px;
+      margin: 12px 0 12px;
     }
 
     .info-pill {
-      font-size: clamp(15px, 2.2vw, 20px);
+      font-size: clamp(13px, 1.8vw, 16px);
       font-weight: 900;
       background: #fff;
       border-radius: 999px;
-      padding: 10px 14px;
+      padding: 8px 12px;
       border: 3px solid #ffd54f;
-      box-shadow: 0 5px 0 rgba(255, 193, 7, 0.26);
+      box-shadow: 0 4px 0 rgba(255, 193, 7, 0.26);
     }
 
     .question-text {
@@ -160,23 +160,23 @@
 
     .play-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 250px;
-      gap: 18px;
+      grid-template-columns: minmax(0, 1fr) 220px;
+      gap: 14px;
       align-items: start;
     }
 
     .stage-wrap {
       background: rgba(255, 255, 255, 0.78);
-      border-radius: 32px;
+      border-radius: 28px;
       border: 4px solid #fff;
-      padding: 18px;
+      padding: 12px;
       box-shadow: 0 15px 28px rgba(0, 0, 0, 0.12);
       transition: opacity .12s ease;
     }
 
     .stage {
       position: relative;
-      height: 590px;
+      height: 440px;
       border-radius: 24px;
       overflow: hidden;
       background:
@@ -272,16 +272,16 @@
     .control-panel {
       background: rgba(255,255,255,.86);
       border: 4px solid #fff;
-      border-radius: 28px;
-      padding: 16px;
+      border-radius: 24px;
+      padding: 12px;
       box-shadow: 0 12px 24px rgba(0,0,0,.1);
       position: sticky;
       top: 16px;
     }
 
     .message {
-      min-height: 92px;
-      padding: 12px;
+      min-height: 76px;
+      padding: 10px;
       border-radius: 18px;
       background: #ffffff;
       border: 3px solid #f5b7ff;
@@ -316,9 +316,9 @@
     .btn {
       width: 100%;
       border: none;
-      border-radius: 18px;
-      padding: 15px 14px;
-      font-size: 18px;
+      border-radius: 16px;
+      padding: 12px 12px;
+      font-size: 16px;
       font-weight: 900;
       cursor: pointer;
       transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
@@ -330,10 +330,10 @@
     .btn-main {
       background: linear-gradient(180deg, #ffd54f, #ff7a00);
       color: #fff;
-      box-shadow: 0 10px 0 #c95b00;
-      font-size: 26px;
-      padding: 24px 18px;
-      border: 5px solid #fff3b0;
+      box-shadow: 0 8px 0 #c95b00;
+      font-size: 22px;
+      padding: 18px 14px;
+      border: 4px solid #fff3b0;
       animation: pulseMainButton 1.6s infinite;
     }
 
@@ -355,10 +355,10 @@
     .btn-next-question {
       background: linear-gradient(180deg, #ffd54f, #ff7a00);
       color: #fff;
-      box-shadow: 0 10px 0 #c95b00;
-      font-size: 26px;
-      padding: 24px 18px;
-      border: 5px solid #fff3b0;
+      box-shadow: 0 8px 0 #c95b00;
+      font-size: 22px;
+      padding: 18px 14px;
+      border: 4px solid #fff3b0;
       animation: pulseMainButton 1.6s infinite;
     }
 
@@ -409,7 +409,7 @@
 
     @keyframes fall {
       0% { transform: translateY(-40px) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(590px) rotate(480deg); opacity: 0; }
+      100% { transform: translateY(440px) rotate(480deg); opacity: 0; }
     }
 
     .result-card {
@@ -437,10 +437,11 @@
 
     @media (max-width: 900px) {
       /* タブレット幅やJSFiddleの表示枠でも、ボタンは右側に維持する */
-      .play-layout { grid-template-columns: minmax(0, 1fr) 220px; }
-      .control-panel { position: sticky; top: 16px; }
+      .play-layout { grid-template-columns: minmax(0, 1fr) 200px; }
+      .control-panel { position: sticky; top: 12px; }
       .button-row { display: flex; flex-direction: column; }
-      .btn { font-size: 16px; padding: 13px 10px; }
+      .btn { font-size: 14px; padding: 10px 8px; }
+      .btn-main, .btn-next-question { font-size: 19px; padding: 15px 10px; }
     }
 
     @media (max-width: 640px) {
@@ -452,7 +453,7 @@
     @media (max-width: 760px) {
       .mode-select { grid-template-columns: 1fr; }
       .top-info { grid-template-columns: 1fr; }
-      .stage { height: 500px; }
+      .stage { height: 380px; }
       .answer-overlay { width: 260px; height: 260px; }
       .answer-big-kanji { font-size: 155px; }
       .button-row { grid-template-columns: 1fr; }
@@ -521,7 +522,6 @@
               <button type="button" class="btn btn-home" id="homeBtn">スタート画面へ</button>
             </div>
           </div>
-          
         </aside>
       </div>
     </section>
@@ -532,7 +532,6 @@
       <h1 class="result-title">おつかれさま！</h1>
       <p class="result-text" id="resultText">全部の問題が終わりました。</p>
       <button type="button" class="btn btn-main" id="restartBtn">もう一回あそぶ</button>
-      
       <button type="button" class="btn btn-home" id="resultHomeBtn">スタート画面へ</button>
     </div>
   </section>
@@ -612,7 +611,7 @@
 
     function getStageSize() {
       const isSmall = window.innerWidth <= 760;
-      const full = isSmall ? 270 : 330;
+      const full = isSmall ? 230 : 250;
       const grid = currentMode === 4 ? 2 : 3;
       const piece = full / grid;
       return { full, piece };
